@@ -1,0 +1,20 @@
+M=64;
+K=log2(M);
+N=600;                 %bit length
+data=randi([0,1],N,1);  %0/1 bits
+%%qam map
+datad=reshape(data,N/K,K);
+datain=bi2de(datad);
+s=qammod(datain,M,'bin');
+si=real(s);sq=imag(s);
+fs=1000;
+fc=5;
+si1=rectpulse(si,fs);sq1=rectpulse(sq,fs);
+%%成形滤波
+h=rcosdesign(0.5,N/K,fs);
+si11=conv(si1,h);sq11=conv(si1,h);
+%%qam mod
+t=(0:2*fs*N/K-1)/fs;
+w=linspace(-fs/2,fs/2,2*fs*N/K);
+xi=cos(2*pi*fc*t);xq=sin(2*pi*fc*t);
+Sr=si11.*xi-sq11.*xq;
