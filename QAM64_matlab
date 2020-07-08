@@ -1,0 +1,39 @@
+function [ Sr ] = QAM_64( data,N,fc,fs)
+%QAM_64 modulation
+M=64;
+K=log2(M);
+datad=reshape(data,N/K,K);
+datain=bi2de(datad);
+s=qammod(datain,M,'bin');
+si=real(s);sq=imag(s);
+si1=rectpulse(si,fs);sq1=rectpulse(sq,fs);
+t=(0:fs*N/K-1)/fs;
+w=linspace(-fs/2,fs/2,fs*N/K);
+xi=cos(2*pi*fc*t);xq=sin(2*pi*fc*t);
+Sr=si1'.*xi-sq1'.*xq;
+end
+function [ Yd ] = QAM_64Demod( Sr,N,fc,fs )
+%QAM_64Demod   Demod
+M=64;
+K=log2(M);
+t=(0:fs*N/K-1)/fs;
+yi=Sr.*cos(2*pi*fc*t);
+yq=-Sr.*sin(2*pi*fc*t);
+y=yi(1:fs:fs*N/K)+j.*yq(1:fs:fs*N/K);
+Y=qamdemod(y,M,'bin');
+Yd=reshape(de2bi(Y),N,1);
+end
+
+M=64;
+K=log2(M);
+N=600;                 %bit length
+data=randi([0,1],N,1);  %0/1 bits
+datad=reshape(data,N/K,K);
+datain=bi2de(datad);
+fs=10;
+fc=5;
+%%QAM Mod
+Sr  = QAM_64( data,N,fc,fs);
+%%QAM Demod
+Yd  = QAM_64Demod( Sr,N,fc,fs );
+%errno=biterr(Yd,data);
